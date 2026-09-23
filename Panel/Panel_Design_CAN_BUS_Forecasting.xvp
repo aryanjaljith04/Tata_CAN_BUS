@@ -1,0 +1,241 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Panel Type="Vector.CANalyzer.Panels.PanelSerializer, Vector.CANalyzer.Panels.Serializer, Version=19.5.44.0, Culture=neutral, PublicKeyToken=null">
+  <Object Type="Vector.CANalyzer.Panels.Runtime.Panel, Vector.CANalyzer.Panels.Common, Version=18.0.150.0, Culture=neutral, PublicKeyToken=null" Name="Panel" ControlName="Panel_Design_CAN_BUS_Forecasting">
+    <Object Type="Vector.CANalyzer.Panels.Design.GroupBoxControl, Vector.CANalyzer.Panels.CommonControls, Version=18.0.150.0, Culture=neutral, PublicKeyToken=null" Name="X8ba19be8ea4b0e4407eafc3e8e59cd2fb770" ControlName="Group Box 5">
+      <Object Type="Vector.CANalyzer.Panels.Design.TrackBarControl, Vector.CANalyzer.Panels.CommonControls, Version=18.0.150.0, Culture=neutral, PublicKeyToken=null" Name="Xd2b3eb81ee12fe4ebae89b4efcdf3bc22db0" ControlName="Track Bar 4">
+        <Property Name="Name">Xd2b3eb81ee12fe4ebae89b4efcdf3bc22db0</Property>
+        <Property Name="Size">238, 30</Property>
+        <Property Name="Location">17, 96</Property>
+        <Property Name="TabIndex">3</Property>
+        <Property Name="MaximumSize">100000, 30</Property>
+        <Property Name="SymbolConfiguration"></Property>
+      </Object>
+      <Object Type="Vector.CANalyzer.Panels.Design.TrackBarControl, Vector.CANalyzer.Panels.CommonControls, Version=18.0.150.0, Culture=neutral, PublicKeyToken=null" Name="X3f643b07eb27ae45fce8090e0ea629512d75" ControlName="Track Bar 3">
+        <Property Name="Name">X3f643b07eb27ae45fce8090e0ea629512d75</Property>
+        <Property Name="Size">238, 30</Property>
+        <Property Name="Location">17, 47</Property>
+        <Property Name="TabIndex">2</Property>
+        <Property Name="MaximumSize">100000, 30</Property>
+        <Property Name="SymbolConfiguration"></Property>
+      </Object>
+      <Object Type="Vector.CANalyzer.Panels.Design.NumericUpDownControl, Vector.CANalyzer.Panels.CommonControls, Version=18.0.150.0, Culture=neutral, PublicKeyToken=null" Name="Xf6a1f669e558ae4270e95cbe01383bf811ae" ControlName="Numeric Up/Down 1">
+        <Property Name="Name">Xf6a1f669e558ae4270e95cbe01383bf811ae</Property>
+        <Property Name="Size">42, 18</Property>
+        <Property Name="Location">106, 23</Property>
+        <Property Name="TabIndex">1</Property>
+        <Property Name="SymbolConfiguration"></Property>
+      </Object>
+      <Property Name="Name">X8ba19be8ea4b0e4407eafc3e8e59cd2fb770</Property>
+      <Property Name="Size">276, 145</Property>
+      <Property Name="Location">712, 258</Property>
+      <Property Name="Text">FAULT_INJECTION_CONTROL</Property>
+      <Property Name="TabIndex">12</Property>
+      <Property Name="UseWindowsStyle">False</Property>
+    </Object>
+    <Object Type="Vector.CANalyzer.Panels.Design.GroupBoxControl, Vector.CANalyzer.Panels.CommonControls, Version=18.0.150.0, Culture=neutral, PublicKeyToken=null" Name="X2b42af02e9de7e459aeab09e8680e3a5c42d" ControlName="Group Box 4">
+      <Object Type="Vector.CANalyzer.Panels.Design.StaticTextControl, Vector.CANalyzer.Panels.CommonControls, Version=18.0.150.0, Culture=neutral, PublicKeyToken=null" Name="X3a62f453e01cee43dfe9d7aed0eb1005613c" ControlName="Static Text 10">
+        <Property Name="Name">X3a62f453e01cee43dfe9d7aed0eb1005613c</Property>
+        <Property Name="Size">37, 15</Property>
+        <Property Name="Location">121, 130</Property>
+        <Property Name="Text">Alpha</Property>
+      </Object>
+      <Object Type="Vector.CANalyzer.Panels.Design.TrackBarControl, Vector.CANalyzer.Panels.CommonControls, Version=18.0.150.0, Culture=neutral, PublicKeyToken=null" Name="X87aac816ecadce41f3e9360e36c9c340323b" ControlName="Track Bar 2">
+        <Property Name="Name">X87aac816ecadce41f3e9360e36c9c340323b</Property>
+        <Property Name="Size">238, 30</Property>
+        <Property Name="Location">17, 106</Property>
+        <Property Name="TabIndex">3</Property>
+        <Property Name="MaximumSize">100000, 30</Property>
+        <Property Name="SymbolConfiguration"></Property>
+      </Object>
+      <Object Type="Vector.CANalyzer.Panels.Design.StaticTextControl, Vector.CANalyzer.Panels.CommonControls, Version=18.0.150.0, Culture=neutral, PublicKeyToken=null" Name="Xd0b3376ae40c1e4dd7e9db5e547bc81e4668" ControlName="Static Text 9">
+        <Property Name="Name">Xd0b3376ae40c1e4dd7e9db5e547bc81e4668</Property>
+        <Property Name="Size">57, 15</Property>
+        <Property Name="Location">109, 81</Property>
+        <Property Name="Text">Threshold</Property>
+      </Object>
+      <Object Type="Vector.CANalyzer.Panels.Design.StaticTextControl, Vector.CANalyzer.Panels.CommonControls, Version=18.0.150.0, Culture=neutral, PublicKeyToken=null" Name="X639a0148ebd43e46ebe81e1e8042bf8b31bb" ControlName="Static Text 8">
+        <Property Name="Name">X639a0148ebd43e46ebe81e1e8042bf8b31bb</Property>
+        <Property Name="Size">40, 15</Property>
+        <Property Name="Location">118, 36</Property>
+        <Property Name="Text">Status</Property>
+      </Object>
+      <Object Type="Vector.CANalyzer.Panels.Design.LEDControl, Vector.CANalyzer.Panels.CommonControls, Version=18.0.150.0, Culture=neutral, PublicKeyToken=null" Name="Xf20f1bd8ed012e4340e9f2be65aae00ae1b1" ControlName="LED Control 8">
+        <Property Name="Name">Xf20f1bd8ed012e4340e9f2be65aae00ae1b1</Property>
+        <Property Name="Size">24, 24</Property>
+        <Property Name="Location">124, 12</Property>
+        <Property Name="ReadOnlyControl">True</Property>
+        <Property Name="TabIndex">2</Property>
+        <Property Name="TabStopActive">False</Property>
+        <Property Name="SymbolConfiguration"></Property>
+      </Object>
+      <Object Type="Vector.CANalyzer.Panels.Design.TrackBarControl, Vector.CANalyzer.Panels.CommonControls, Version=18.0.150.0, Culture=neutral, PublicKeyToken=null" Name="Xb75c95a3e8521e4ae2eb6e0e4a594dd2a00b" ControlName="Track Bar 1">
+        <Property Name="Name">Xb75c95a3e8521e4ae2eb6e0e4a594dd2a00b</Property>
+        <Property Name="Size">238, 30</Property>
+        <Property Name="Location">17, 57</Property>
+        <Property Name="TabIndex">1</Property>
+        <Property Name="MaximumSize">100000, 30</Property>
+        <Property Name="SymbolConfiguration"></Property>
+      </Object>
+      <Property Name="Name">X2b42af02e9de7e459aeab09e8680e3a5c42d</Property>
+      <Property Name="Size">276, 165</Property>
+      <Property Name="Location">712, 53</Property>
+      <Property Name="Text">DEFERRAL CONTROL</Property>
+      <Property Name="TabIndex">11</Property>
+      <Property Name="UseWindowsStyle">False</Property>
+    </Object>
+    <Object Type="Vector.CANalyzer.Panels.Design.GroupBoxControl, Vector.CANalyzer.Panels.CommonControls, Version=18.0.150.0, Culture=neutral, PublicKeyToken=null" Name="Xc0b6e93ce8e26e48c3eaa64e77e84adef2f9" ControlName="Group Box 3">
+      <Property Name="Name">Xc0b6e93ce8e26e48c3eaa64e77e84adef2f9</Property>
+      <Property Name="Size">622, 145</Property>
+      <Property Name="Location">52, 258</Property>
+      <Property Name="Text">REAL TIME LOAD HISTORY</Property>
+      <Property Name="TabIndex">10</Property>
+      <Property Name="UseWindowsStyle">False</Property>
+    </Object>
+    <Object Type="Vector.CANalyzer.Panels.Design.GroupBoxControl, Vector.CANalyzer.Panels.CommonControls, Version=18.0.150.0, Culture=neutral, PublicKeyToken=null" Name="Xa0f1ae58e20c6e4b2ae9c76efddfdfff55e4" ControlName="Group Box 2">
+      <Property Name="Name">Xa0f1ae58e20c6e4b2ae9c76efddfdfff55e4</Property>
+      <Property Name="Size">354, 203</Property>
+      <Property Name="Location">320, 15</Property>
+      <Property Name="Text">NODE STATUS</Property>
+      <Property Name="TabIndex">9</Property>
+      <Property Name="UseWindowsStyle">False</Property>
+    </Object>
+    <Object Type="Vector.CANalyzer.Panels.Design.StaticTextControl, Vector.CANalyzer.Panels.CommonControls, Version=18.0.150.0, Culture=neutral, PublicKeyToken=null" Name="X0c2d52b8e5291e410dea624edbe60203237d" ControlName="Static Text 7">
+      <Property Name="Name">X0c2d52b8e5291e410dea624edbe60203237d</Property>
+      <Property Name="Size">72, 15</Property>
+      <Property Name="Location">566, 162</Property>
+      <Property Name="Text">Fault Injector</Property>
+    </Object>
+    <Object Type="Vector.CANalyzer.Panels.Design.StaticTextControl, Vector.CANalyzer.Panels.CommonControls, Version=18.0.150.0, Culture=neutral, PublicKeyToken=null" Name="Xade6a42ce6abfe4047eb5dee8ea037b6681a" ControlName="Static Text 6">
+      <Property Name="Name">Xade6a42ce6abfe4047eb5dee8ea037b6681a</Property>
+      <Property Name="Size">32, 15</Property>
+      <Property Name="Location">566, 109</Property>
+      <Property Name="Text">ACU</Property>
+    </Object>
+    <Object Type="Vector.CANalyzer.Panels.Design.StaticTextControl, Vector.CANalyzer.Panels.CommonControls, Version=18.0.150.0, Culture=neutral, PublicKeyToken=null" Name="Xc2889c60e8710e465fe8d20eb3ba5c133ca6" ControlName="Static Text 5">
+      <Property Name="Name">Xc2889c60e8710e465fe8d20eb3ba5c133ca6</Property>
+      <Property Name="Size">76, 15</Property>
+      <Property Name="Location">566, 62</Property>
+      <Property Name="Text">Carsh Sensor</Property>
+    </Object>
+    <Object Type="Vector.CANalyzer.Panels.Design.StaticTextControl, Vector.CANalyzer.Panels.CommonControls, Version=18.0.150.0, Culture=neutral, PublicKeyToken=null" Name="Xfe0903ebed639e4b10e83b7eaae9e2a4c7ad" ControlName="Static Text 4">
+      <Property Name="Name">Xfe0903ebed639e4b10e83b7eaae9e2a4c7ad</Property>
+      <Property Name="Size">69, 15</Property>
+      <Property Name="Location">385, 185</Property>
+      <Property Name="Text">Battery ECU</Property>
+    </Object>
+    <Object Type="Vector.CANalyzer.Panels.Design.StaticTextControl, Vector.CANalyzer.Panels.CommonControls, Version=18.0.150.0, Culture=neutral, PublicKeyToken=null" Name="X7733bdeee32bce4700e9f9de5326130b7e9b" ControlName="Static Text 3">
+      <Property Name="Name">X7733bdeee32bce4700e9f9de5326130b7e9b</Property>
+      <Property Name="Size">72, 15</Property>
+      <Property Name="Location">385, 137</Property>
+      <Property Name="Text">Body Control</Property>
+    </Object>
+    <Object Type="Vector.CANalyzer.Panels.Design.StaticTextControl, Vector.CANalyzer.Panels.CommonControls, Version=18.0.150.0, Culture=neutral, PublicKeyToken=null" Name="X5a53f7ede89dae4670eaa76e1a2427741171" ControlName="Static Text 2">
+      <Property Name="Name">X5a53f7ede89dae4670eaa76e1a2427741171</Property>
+      <Property Name="Size">65, 27</Property>
+      <Property Name="Location">385, 88</Property>
+      <Property Name="Text">ADAS ECU
+</Property>
+    </Object>
+    <Object Type="Vector.CANalyzer.Panels.Design.StaticTextControl, Vector.CANalyzer.Panels.CommonControls, Version=18.0.150.0, Culture=neutral, PublicKeyToken=null" Name="Xe904d647e54e4e4537ea26eec9b97d4fd488" ControlName="Static Text 1">
+      <Property Name="Name">Xe904d647e54e4e4537ea26eec9b97d4fd488</Property>
+      <Property Name="Size">69, 15</Property>
+      <Property Name="Location">385, 41</Property>
+      <Property Name="Text">Engine ECU</Property>
+    </Object>
+    <Object Type="Vector.CANalyzer.Panels.Design.LEDControl, Vector.CANalyzer.Panels.CommonControls, Version=18.0.150.0, Culture=neutral, PublicKeyToken=null" Name="Xc3f21e6fe301ae45f6e92f2eacbc293aa8c0" ControlName="LED Control 7">
+      <Property Name="Name">Xc3f21e6fe301ae45f6e92f2eacbc293aa8c0</Property>
+      <Property Name="Size">24, 24</Property>
+      <Property Name="Location">515, 58</Property>
+      <Property Name="ReadOnlyControl">True</Property>
+      <Property Name="TabIndex">8</Property>
+      <Property Name="TabStopActive">False</Property>
+      <Property Name="SymbolConfiguration"></Property>
+    </Object>
+    <Object Type="Vector.CANalyzer.Panels.Design.LEDControl, Vector.CANalyzer.Panels.CommonControls, Version=18.0.150.0, Culture=neutral, PublicKeyToken=null" Name="Xee5925ebea351e48c1eacf4ec7c9368539ae" ControlName="LED Control 6">
+      <Property Name="Name">Xee5925ebea351e48c1eacf4ec7c9368539ae</Property>
+      <Property Name="Size">24, 24</Property>
+      <Property Name="Location">515, 153</Property>
+      <Property Name="ReadOnlyControl">True</Property>
+      <Property Name="TabIndex">7</Property>
+      <Property Name="TabStopActive">False</Property>
+      <Property Name="SymbolConfiguration"></Property>
+    </Object>
+    <Object Type="Vector.CANalyzer.Panels.Design.LEDControl, Vector.CANalyzer.Panels.CommonControls, Version=18.0.150.0, Culture=neutral, PublicKeyToken=null" Name="X0c62c38beabc6e4f46e8fd1e3f08881bf352" ControlName="LED Control 5">
+      <Property Name="Name">X0c62c38beabc6e4f46e8fd1e3f08881bf352</Property>
+      <Property Name="Size">24, 24</Property>
+      <Property Name="Location">515, 105</Property>
+      <Property Name="ReadOnlyControl">True</Property>
+      <Property Name="TabIndex">6</Property>
+      <Property Name="TabStopActive">False</Property>
+      <Property Name="SymbolConfiguration"></Property>
+    </Object>
+    <Object Type="Vector.CANalyzer.Panels.Design.LEDControl, Vector.CANalyzer.Panels.CommonControls, Version=18.0.150.0, Culture=neutral, PublicKeyToken=null" Name="Xc2a336d9e2155e4e9aeac3be80f18ff99c3e" ControlName="LED Control 4">
+      <Property Name="Name">Xc2a336d9e2155e4e9aeac3be80f18ff99c3e</Property>
+      <Property Name="Size">24, 24</Property>
+      <Property Name="Location">345, 180</Property>
+      <Property Name="ReadOnlyControl">True</Property>
+      <Property Name="TabIndex">5</Property>
+      <Property Name="TabStopActive">False</Property>
+      <Property Name="SymbolConfiguration"></Property>
+    </Object>
+    <Object Type="Vector.CANalyzer.Panels.Design.LEDControl, Vector.CANalyzer.Panels.CommonControls, Version=18.0.150.0, Culture=neutral, PublicKeyToken=null" Name="Xf50f4560ef7ede42d5eb9efef547c29274ee" ControlName="LED Control 3">
+      <Property Name="Name">Xf50f4560ef7ede42d5eb9efef547c29274ee</Property>
+      <Property Name="Size">24, 24</Property>
+      <Property Name="Location">345, 132</Property>
+      <Property Name="ReadOnlyControl">True</Property>
+      <Property Name="TabIndex">4</Property>
+      <Property Name="TabStopActive">False</Property>
+      <Property Name="SymbolConfiguration"></Property>
+    </Object>
+    <Object Type="Vector.CANalyzer.Panels.Design.LEDControl, Vector.CANalyzer.Panels.CommonControls, Version=18.0.150.0, Culture=neutral, PublicKeyToken=null" Name="Xc6d2c30de9068e401deb262eee58624a1297" ControlName="LED Control 2">
+      <Property Name="Name">Xc6d2c30de9068e401deb262eee58624a1297</Property>
+      <Property Name="Size">24, 24</Property>
+      <Property Name="Location">345, 84</Property>
+      <Property Name="ReadOnlyControl">True</Property>
+      <Property Name="TabIndex">3</Property>
+      <Property Name="TabStopActive">False</Property>
+      <Property Name="SymbolConfiguration"></Property>
+    </Object>
+    <Object Type="Vector.CANalyzer.Panels.Design.LEDControl, Vector.CANalyzer.Panels.CommonControls, Version=18.0.150.0, Culture=neutral, PublicKeyToken=null" Name="X8aa7becbe5ce0e4b1cea998e64da44ed430d" ControlName="LED Control 1">
+      <Property Name="Name">X8aa7becbe5ce0e4b1cea998e64da44ed430d</Property>
+      <Property Name="Size">24, 24</Property>
+      <Property Name="Location">345, 37</Property>
+      <Property Name="ReadOnlyControl">True</Property>
+      <Property Name="TabIndex">2</Property>
+      <Property Name="TabStopActive">False</Property>
+      <Property Name="SymbolConfiguration"></Property>
+    </Object>
+    <Object Type="Vector.CANalyzer.Panels.Design.GroupBoxControl, Vector.CANalyzer.Panels.CommonControls, Version=18.0.150.0, Culture=neutral, PublicKeyToken=null" Name="X73f7575be549ee4deaebdbeef9e1b467d065" ControlName="Group Box 1">
+      <Property Name="Name">X73f7575be549ee4deaebdbeef9e1b467d065</Property>
+      <Property Name="Size">204, 203</Property>
+      <Property Name="Location">48, 15</Property>
+      <Property Name="Text">BUS LOAD MONITOR</Property>
+      <Property Name="TabIndex">1</Property>
+      <Property Name="UseWindowsStyle">False</Property>
+    </Object>
+    <Object Type="Vector.CANalyzer.Panels.Design.ProgressBarControl, Vector.CANalyzer.Panels.CommonControls, Version=19.2.23.0, Culture=neutral, PublicKeyToken=null" Name="X3a882bf1e25bbe413de9ae0ee37b7d9e2466" ControlName="Progress Bar 2">
+      <Property Name="Name">X3a882bf1e25bbe413de9ae0ee37b7d9e2466</Property>
+      <Property Name="Size">29, 140</Property>
+      <Property Name="Location">169, 55</Property>
+      <Property Name="Alignment">RightBottom</Property>
+      <Property Name="Orientation">Vertical</Property>
+      <Property Name="ValueSize">0, 0</Property>
+      <Property Name="OriginValue">0</Property>
+      <Property Name="SymbolConfiguration"></Property>
+    </Object>
+    <Object Type="Vector.CANalyzer.Panels.Design.ProgressBarControl, Vector.CANalyzer.Panels.CommonControls, Version=19.2.23.0, Culture=neutral, PublicKeyToken=null" Name="X6ee99316ef244e41c9ea50ce157bbfd0a1a1" ControlName="Progress Bar 1">
+      <Property Name="Name">X6ee99316ef244e41c9ea50ce157bbfd0a1a1</Property>
+      <Property Name="Size">29, 140</Property>
+      <Property Name="Location">98, 55</Property>
+      <Property Name="Alignment">RightBottom</Property>
+      <Property Name="Orientation">Vertical</Property>
+      <Property Name="ValueSize">0, 0</Property>
+      <Property Name="OriginValue">0</Property>
+      <Property Name="SymbolConfiguration"></Property>
+    </Object>
+    <Property Name="Name">Panel</Property>
+    <Property Name="Size">1006, 447</Property>
+    <Property Name="Location">0, 0</Property>
+    <Property Name="BackColor">White</Property>
+  </Object>
+</Panel>

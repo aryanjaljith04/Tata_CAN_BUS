@@ -1,0 +1,49 @@
+/* BatteryECU.can */
+variables {
+  msTimer batTimer;
+  message BAT_Monitor batMonitor;
+  message BAT_Thermal batThermal;
+  float   soc     = 80.0;    // starting SOC %
+  float   voltage = 370.0;   // starting voltage V
+  float   cellTemp = 25.0;   // starting temp degC
+}
+
+on start {
+  batMonitor.id  = 0x400;
+  batMonitor.dlc = 5;
+  batThermal.id  = 0x401;
+  batThermal.dlc = 4;
+  @sysvar::NodeStatus::Node_Battery_Status = 1;
+  setTimer(batTimer, 10);
+}
+
+on timer batTimer {
+  if(@sysvar::LoadManager::DeferralActive == 1) {
+    @sysvar::NodeStatus::Node_Battery_Status = 2;  // Deferred
+    @sysvar::LoadManager::DeferralCount =
+      @sysvar::LoadManager::DeferralCount + 1;
+  } else {
+    @sysvar::NodeStatus::Node_Battery_Status = 1;
+
+    // Slowly drain SOC and voltage
+    soc     = soc - 0.005;
+    voltage = 350.0 + (soc / 80.0) * 20.0;  // proportional to SOC
+    cellTemp = 25.0 + (random(100) * 0.1);   // slight variation
+
+    if(soc < 10.0) soc = 80.0;  // reset for simulation
+
+    // Pack BAT_Monitor signals
+    batMonitor.byte(0)  = (byte)(soc / 0.5);          // SOC raw
+    batMonitor.word(1)  = (word)(voltage / 0.01);     // BatVoltage raw
+    batMonitor.word(3)  = 32768;                       // BatCurrent 0A
+
+    output(batMonitor);
+
+    // Pack BAT_Thermal
+    // CellTemp raw = (cellTemp + 40) / 0.1
+    batThermal.word(0) = (word)((cellTemp + 40.0) / 0.1);
+    batThermal.word(2) = (word)((cellTemp + 40.0) / 0.1);
+    output(batThermal);
+  }
+  setTimer(batTimer, 100);
+}

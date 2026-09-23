@@ -1,0 +1,58 @@
+/* CrashSensor.can */
+variables {
+  msTimer  accTimer;
+  message  CRASH_Detected crashMsg;
+  message  ACC_Data       accMsg;
+  int      crashFired = 0;  // debounce flag
+}
+
+on start {
+  crashMsg.id    = 0x001;
+  crashMsg.dlc   = 1;
+  crashMsg.byte(0) = 0;
+  accMsg.id      = 0x050;
+  accMsg.dlc     = 4;
+  @sysvar::NodeStatus::Node_CrashSensor_Status = 1;
+  setTimer(accTimer, 100);
+}
+
+on timer accTimer {
+  // Normal routine acceleration data
+  accMsg.word(0) = 32768;  // LongAccel = 0.0 m/s2
+  accMsg.word(2) = 32768;  // LatAccel  = 0.0 m/s2
+  output(accMsg);
+  setTimer(accTimer, 100);
+}
+
+on sysvar sysvar::CrashSafety::SimulateCrash {
+  if(@sysvar::CrashSafety::SimulateCrash == 1
+     && crashFired == 0
+     && @sysvar::CrashSafety::AirbagDeployed == 0) {
+
+    crashFired = 1;  // debounce -- prevent double fire
+
+    // Record exact send timestamp in nanoseconds
+    @sysvar::CrashSafety::CrashSentTime = (int)timeNow();
+
+    // Send CRASH_Detected with CrashFlag = 1
+    crashMsg.byte(0) = 1;
+    output(crashMsg);
+
+    // Spike ACC_Data to simulate crash g-force
+    accMsg.word(0) = 62768;  // LongAccel spike (large decel)
+    accMsg.word(2) = 32768;
+    output(accMsg);
+
+    write("CRASH EVENT SENT at timestamp %d ns",
+          @sysvar::CrashSafety::CrashSentTime);
+
+    // Reset trigger
+    @sysvar::CrashSafety::SimulateCrash = 0;
+  }
+}
+
+on sysvar sysvar::CrashSafety::ResetCrash {
+  if(@sysvar::CrashSafety::ResetCrash == 1) {
+    crashFired = 0;  // allow next crash
+  }
+}

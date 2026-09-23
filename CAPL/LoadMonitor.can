@@ -1,0 +1,107 @@
+/*@!Encoding:1252*/
+
+/* LoadMonitor.can
+   Node     : LoadMonitor
+   Purpose  : EWMA bus load forecasting, deferral control,
+              statistics tracking, LM_BusLoad broadcast
+   Author   : Aryan Jaljith | CB.EN.U4EEE2310 5
+*/
+
+variables {
+  msTimer   loadTimer;
+  msTimer   secTimer;
+  message   LM_BusLoad lmMsg;
+  int       messageCount  = 0;
+  float     currentLoad   = 0.0;
+  float     predictedLoad = 0.0;
+  float     alpha         = 0.3;
+  float     threshold     = 70.0;
+  float     sumLoad       = 0.0;
+  float     sumSqErr      = 0.0;
+  float     prevPredicted = 0.0;
+  float     maxMsgs       = 80.0;
+  int       sampleCount   = 0;
+  // Declare these here -- NOT inside on timer block
+  float     accuracy      = 0.0;
+  float     err           = 0.0;
+  float     absDiff       = 0.0;
+}
+
+on start {
+  lmMsg.id  = 0x500;
+  lmMsg.dlc = 6;
+  setTimer(loadTimer, 100);
+  setTimer(secTimer, 1000);
+}
+
+on message * {
+  messageCount++;
+  @sysvar::LoadManager::TotalMessages =
+    @sysvar::LoadManager::TotalMessages + 1;
+}
+
+on timer secTimer {
+  @sysvar::LoadManager::SessionTime =
+    @sysvar::LoadManager::SessionTime + 1;
+  setTimer(secTimer, 1000);
+}
+
+on timer loadTimer {
+  // Read live panel values
+  alpha     = @sysvar::LoadManager::Alpha;
+  threshold = @sysvar::LoadManager::Threshold;
+
+  // STEP 1 -- Actual bus load this window
+  currentLoad = (messageCount / maxMsgs) * 100.0;
+  if(currentLoad > 100.0) currentLoad = 100.0;
+
+  // STEP 2 -- EWMA formula
+  predictedLoad = (alpha * currentLoad)
+                + ((1.0 - alpha) * predictedLoad);
+
+  // STEP 3 -- Prediction accuracy (no abs() -- manual logic)
+  absDiff = predictedLoad - prevPredicted;
+  if(absDiff < 0.0) absDiff = absDiff * -1.0;
+  accuracy = 100.0 - absDiff;
+  if(accuracy < 0.0) accuracy = 0.0;
+  prevPredicted = predictedLoad;
+
+  // STEP 4 -- Running statistics
+  sampleCount++;
+  sumLoad  += currentLoad;
+  err       = predictedLoad - currentLoad;
+  if(err < 0.0) err = err * -1.0;  // manual absolute value
+  sumSqErr += (err * err);
+
+  @sysvar::LoadManager::SampleCount       = sampleCount;
+  @sysvar::LoadManager::AverageLoad       = sumLoad / (float)sampleCount;
+  @sysvar::LoadManager::RMSE              = sqrt(sumSqErr / (float)sampleCount);
+  @sysvar::LoadManager::PredictionAccuracy = accuracy;
+
+  // STEP 5 -- Peak load tracker
+  if(currentLoad > @sysvar::LoadManager::PeakLoad) {
+    @sysvar::LoadManager::PeakLoad = currentLoad;
+  }
+
+  // STEP 6 -- Deferral decision
+  if(predictedLoad > threshold) {
+    @sysvar::LoadManager::DeferralActive = 1;
+    write("DEFERRAL ON: Predicted load = %.1f%%", predictedLoad);
+  } else {
+    @sysvar::LoadManager::DeferralActive = 0;
+  }
+
+  // STEP 7 -- Push to panel sysvars
+  @sysvar::LoadManager::CurrentLoad   = currentLoad;
+  @sysvar::LoadManager::PredictedLoad = predictedLoad;
+
+  // STEP 8 -- Broadcast LM_BusLoad CAN message
+  lmMsg.word(0) = (word)(currentLoad   / 0.1);
+  lmMsg.word(2) = (word)(predictedLoad / 0.1);
+  lmMsg.word(4) = (word)(accuracy      / 0.1);
+  output(lmMsg);
+
+  // STEP 9 -- Reset window counter
+  messageCount = 0;
+  setTimer(loadTimer, 100);
+}

@@ -1,0 +1,38 @@
+/* EngineECU.can */
+variables {
+  msTimer engTimer;
+  message ENG_Status  engStatus;
+  message ENG_Control engControl;
+  float   rpmVal     = 800.0;
+  float   throttle   = 0.0;
+  float   engTemp    = 40.0;
+}
+
+on start {
+  engStatus.id  = 0x100;
+  engStatus.dlc = 5;
+  engControl.id  = 0x101;
+  engControl.dlc = 3;
+  @sysvar::NodeStatus::Node_Engine_Status = 1;  // Active
+  setTimer(engTimer, 10);  // 10ms cycle
+}
+
+on timer engTimer {
+  // Simulate slowly changing engine values
+  rpmVal  = 800.0 + (random(3200) * 0.25);   // 800-1600 rpm
+  throttle = random(40) * 0.5;               // 0-20%
+  engTemp = 40.0 + (random(500) * 0.1);      // 40-90 degC
+
+  // Pack signals into ENG_Status (raw values)
+  engStatus.word(0) = (word)(rpmVal / 0.25);
+  engStatus.byte(2) = (byte)(throttle / 0.5);
+  engStatus.word(3) = (word)((engTemp + 40.0) / 0.1);
+  output(engStatus);
+
+  // Pack ENG_Control
+  engControl.word(0) = 350;
+  engControl.byte(2) = 60;
+  output(engControl);
+
+  setTimer(engTimer, 10);
+}

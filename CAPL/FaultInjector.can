@@ -1,0 +1,114 @@
+/*@!Encoding:1252*/
+/* FaultInjector.can
+   Node    : FaultInjector
+   Purpose : Generates burst traffic for 3 fault scenarios
+   Author  : Aryan Jaljith | CB.EN.U4EEE2310 5
+*/
+
+variables {
+  msTimer burstTimer;
+  msTimer durationTimer;
+  message 0x700 faultMsg;   // generic flood message
+  message 0x701 faultMsg2;  // ramp message
+  message 0x710 cascadeMsg0;
+  message 0x711 cascadeMsg1;
+  message 0x712 cascadeMsg2;
+  message 0x713 cascadeMsg3;
+  message 0x714 cascadeMsg4;
+  int     burstID       = 0;
+  int     elapsedSec    = 0;
+  int     isInjecting   = 0;
+  int     burstInterval = 10;
+  // Declare all local variables here
+  int     intensity     = 0;
+  int     scenario      = 0;
+}
+
+on start {
+  faultMsg.dlc    = 8;
+  faultMsg2.dlc   = 8;
+  cascadeMsg0.dlc = 8;
+  cascadeMsg1.dlc = 8;
+  cascadeMsg2.dlc = 8;
+  cascadeMsg3.dlc = 8;
+  cascadeMsg4.dlc = 8;
+  @sysvar::FaultInjection::FaultStatus   = 0;
+  @sysvar::NodeStatus::Node_Fault_Status = 0;
+}
+
+on sysvar sysvar::FaultInjection::InjectFault {
+  if(@sysvar::FaultInjection::InjectFault == 1
+     && isInjecting == 0) {
+
+    isInjecting = 1;
+    elapsedSec  = 0;
+    burstID     = 0;
+    @sysvar::FaultInjection::FaultStatus   = 1;
+    @sysvar::NodeStatus::Node_Fault_Status = 1;
+
+    // Read intensity from sysvar (now assigned, not declared)
+    intensity = @sysvar::FaultInjection::BurstIntensity;
+    if(intensity == 0)      burstInterval = 20;  // Low
+    else if(intensity == 1) burstInterval = 7;   // Medium
+    else                    burstInterval = 3;   // High
+
+    setTimer(burstTimer, burstInterval);
+    setTimer(durationTimer, 1000);
+
+    write("FAULT INJECTOR: Started. Scenario=%d Intensity=%d",
+          @sysvar::FaultInjection::ScenarioType, intensity);
+
+    @sysvar::FaultInjection::InjectFault = 0;
+  }
+}
+
+on sysvar sysvar::FaultInjection::StopFault {
+  if(@sysvar::FaultInjection::StopFault == 1) {
+    isInjecting = 0;
+    @sysvar::FaultInjection::FaultStatus   = 0;
+    @sysvar::NodeStatus::Node_Fault_Status = 0;
+    cancelTimer(burstTimer);
+    cancelTimer(durationTimer);
+    write("FAULT INJECTOR: Stopped by user.");
+    @sysvar::FaultInjection::StopFault = 0;
+  }
+}
+
+on timer burstTimer {
+  if(isInjecting == 1) {
+
+    // Read scenario from sysvar (assigned, not declared)
+    scenario = @sysvar::FaultInjection::ScenarioType;
+
+    if(scenario == 1) {
+      // Sudden Burst -- flood with incrementing IDs
+      faultMsg.byte(0) = burstID & 0xFF;
+      output(faultMsg);
+      burstID++;
+      if(burstID > 255) burstID = 0;
+    }
+    else if(scenario == 2) {
+      // Ramp -- single message, interval shrinks over time
+      output(faultMsg2);
+      if(burstInterval > 3) burstInterval--;
+    }
+    else if(scenario == 3) {
+      // Cascade -- 5 different messages simultaneously
+      output(cascadeMsg0);
+      output(cascadeMsg1);
+      output(cascadeMsg2);
+      output(cascadeMsg3);
+      output(cascadeMsg4);
+    }
+
+    setTimer(burstTimer, burstInterval);
+  }
+}
+
+on timer durationTimer {
+  if(isInjecting == 1) {
+    elapsedSec++;
+    write("FAULT INJECTOR: Running... %d seconds elapsed.", elapsedSec);
+    setTimer(durationTimer, 1000);
+  }
+}

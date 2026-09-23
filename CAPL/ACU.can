@@ -1,0 +1,78 @@
+/* ACU.can */
+variables {
+  message AIRBAG_Deploy airbagMsg;
+  int     latency_ms   = 0;
+  int     deployTime_ms = 0;
+  int     receiveTime   = 0;
+}
+
+on start {
+  airbagMsg.id    = 0x002;
+  airbagMsg.dlc   = 1;
+  airbagMsg.byte(0) = 0;
+  @sysvar::NodeStatus::Node_ACU_Status = 0;  // Standby
+}
+
+on message CRASH_Detected {
+  // Only process if airbag not already deployed
+  if(this.byte(0) == 1
+     && @sysvar::CrashSafety::AirbagDeployed == 0) {
+
+    @sysvar::NodeStatus::Node_ACU_Status = 1;  // Deploying
+
+    // Calculate CAN transit latency
+    receiveTime = (int)timeNow();
+    // timeNow() in CANoe is in 10 microsecond ticks. 100 ticks = 1 ms.
+    latency_ms = (receiveTime - @sysvar::CrashSafety::CrashSentTime) / 100;
+
+    // --- REALISTIC QUEUE DELAY SIMULATION ---
+    // Because ID 0x001 has perfect priority in CANoe, raw latency is always <1ms.
+    // We dynamically simulate realistic Tx queue blocking based on bus congestion:
+    if(@sysvar::LoadManager::CurrentLoad > 85.0) {
+      latency_ms += 45;  // Severe congestion delay
+    } else if(@sysvar::LoadManager::CurrentLoad > 70.0) {
+      latency_ms += 15;  // Moderate delay
+    } else {
+      latency_ms += (random(3) + 1); // 1-3ms normal delay
+    }
+
+    @sysvar::CrashSafety::CrashToACU_Latency = latency_ms;
+
+    write("ACU received CRASH. Latency = %d ms", latency_ms);
+
+    // DEPLOY AIRBAG (simulate 2ms processing time)
+    airbagMsg.byte(0) = 1;
+    output(airbagMsg);
+    @sysvar::CrashSafety::AirbagDeployed = 1;
+
+    // Calculate total deploy time (latency + 2ms processing)
+    deployTime_ms = latency_ms + 2;
+    @sysvar::CrashSafety::TotalDeployTime = deployTime_ms;
+
+    // ISO 26262 check -- 30ms limit
+    if(latency_ms > 30) {
+      @sysvar::CrashSafety::SafetyBreach = 1;
+      write("SAFETY BREACH: %d ms > 30ms ISO 26262 limit!",
+            latency_ms);
+    } else {
+      @sysvar::CrashSafety::SafetyBreach = 0;
+      write("SAFETY OK: %d ms within 30ms limit.", latency_ms);
+    }
+
+    @sysvar::NodeStatus::Node_ACU_Status = 0;  // Back to standby
+  }
+}
+
+on sysvar sysvar::CrashSafety::ResetCrash {
+  if(@sysvar::CrashSafety::ResetCrash == 1) {
+    @sysvar::CrashSafety::AirbagDeployed   = 0;
+    @sysvar::CrashSafety::CrashSentTime    = 0;
+    @sysvar::CrashSafety::CrashToACU_Latency = 0;
+    @sysvar::CrashSafety::TotalDeployTime  = 0;
+    @sysvar::CrashSafety::SafetyBreach     = 0;
+
+    airbagMsg.byte(0) = 0;
+    write("ACU RESET -- Ready for next crash test.");
+    @sysvar::CrashSafety::ResetCrash = 0;
+  }
+}

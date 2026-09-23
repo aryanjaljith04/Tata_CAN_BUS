@@ -1,0 +1,35 @@
+/* BodyControl.can */
+variables {
+  msTimer bcmTimer;
+  message BCM_Status  bcmStatus;
+  message BCM_Climate bcmClimate;
+}
+
+on start {
+  bcmStatus.id   = 0x300;
+  bcmStatus.dlc  = 1;
+  bcmClimate.id  = 0x301;
+  bcmClimate.dlc = 2;
+  @sysvar::NodeStatus::Node_BCM_Status = 1;
+  setTimer(bcmTimer, 10);
+}
+
+on timer bcmTimer {
+  if(@sysvar::LoadManager::DeferralActive == 1) {
+    // BUS IS PREDICTED CONGESTED -- SKIP THIS TRANSMISSION
+    @sysvar::NodeStatus::Node_BCM_Status = 2;  // Deferred
+    @sysvar::LoadManager::DeferralCount =
+      @sysvar::LoadManager::DeferralCount + 1;
+  } else {
+    // Normal transmission
+    @sysvar::NodeStatus::Node_BCM_Status = 1;  // Active
+    bcmStatus.byte(0) = 0x00;   // doors closed, lights off
+    output(bcmStatus);
+
+    // HVACTemp raw=70 (15 degC), FanSpeed=30%
+    bcmClimate.byte(0) = 70;
+    bcmClimate.byte(1) = 30;
+    output(bcmClimate);
+  }
+  setTimer(bcmTimer, 200);
+}

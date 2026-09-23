@@ -29,7 +29,7 @@ on timer bcmTimer {
     bcmClimate.byte(1) = 30;
     
     // Output multiple to maintain load ratio safely
-    for(i=0; i<6; i++) {
+    for(i=0; i<5; i++) {
       output(bcmStatus);
       output(bcmClimate);
     }

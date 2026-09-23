@@ -22,6 +22,7 @@ variables {
   // Declare all local variables here
   int     intensity     = 0;
   int     scenario      = 0;
+  int     i             = 0;
 }
 
 on start {
@@ -49,8 +50,8 @@ on sysvar sysvar::FaultInjection::InjectFault {
     // Read intensity from sysvar (now assigned, not declared)
     intensity = @sysvar::FaultInjection::BurstIntensity;
     if(intensity == 0)      burstInterval = 100; // Low
-    else if(intensity == 1) burstInterval = 40;  // Medium
-    else                    burstInterval = 3;   // High
+    else if(intensity == 1) burstInterval = 50;  // Medium
+    else                    burstInterval = 20;  // High
 
     setTimer(burstTimer, burstInterval);
     setTimer(durationTimer, 1000);
@@ -82,15 +83,19 @@ on timer burstTimer {
 
     if(scenario == 1) {
       // Sudden Burst -- flood with incrementing IDs
-      faultMsg.byte(0) = burstID & 0xFF;
-      output(faultMsg);
-      burstID++;
-      if(burstID > 255) burstID = 0;
+      for(i=0; i<4; i++) {
+        faultMsg.byte(0) = burstID & 0xFF;
+        output(faultMsg);
+        burstID++;
+        if(burstID > 255) burstID = 0;
+      }
     }
     else if(scenario == 2) {
       // Ramp -- single message, interval shrinks over time
-      output(faultMsg2);
-      if(burstInterval > 3) burstInterval--;
+      for(i=0; i<4; i++) {
+        output(faultMsg2);
+      }
+      if(burstInterval > 20) burstInterval--;
     }
     else if(scenario == 3) {
       // Cascade -- 5 different messages simultaneously

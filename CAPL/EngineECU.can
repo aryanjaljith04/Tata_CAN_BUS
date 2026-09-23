@@ -6,6 +6,7 @@ variables {
   float   rpmVal     = 800.0;
   float   throttle   = 0.0;
   float   engTemp    = 40.0;
+  int i = 0;
 }
 
 on start {
@@ -14,7 +15,7 @@ on start {
   engControl.id  = 0x101;
   engControl.dlc = 3;
   @sysvar::NodeStatus::Node_Engine_Status = 1;  // Active
-  setTimer(engTimer, 10);  // 10ms cycle
+  setTimer(engTimer, 100);  // 100ms cycle
 }
 
 on timer engTimer {
@@ -27,12 +28,15 @@ on timer engTimer {
   engStatus.word(0) = (word)(rpmVal / 0.25);
   engStatus.byte(2) = (byte)(throttle / 0.5);
   engStatus.word(3) = (word)((engTemp + 40.0) / 0.1);
-  output(engStatus);
-
+  
   // Pack ENG_Control
   engControl.word(0) = 350;
   engControl.byte(2) = 60;
-  output(engControl);
+  
+  for(i=0; i<3; i++) {
+    output(engStatus);
+    output(engControl);
+  }
 
-  setTimer(engTimer, 10);
+  setTimer(engTimer, 100);
 }

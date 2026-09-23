@@ -43,7 +43,7 @@ on timer batTimer {
     batThermal.word(0) = (word)((cellTemp + 40.0) / 0.1);
     batThermal.word(2) = (word)((cellTemp + 40.0) / 0.1);
 
-    for(i=0; i<6; i++) {
+    for(i=0; i<5; i++) {
       output(batMonitor);
       output(batThermal);
     }

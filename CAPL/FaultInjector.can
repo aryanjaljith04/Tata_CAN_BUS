@@ -50,7 +50,7 @@ on sysvar sysvar::FaultInjection::InjectFault {
     intensity = @sysvar::FaultInjection::BurstIntensity;
     if(intensity == 0)      burstInterval = 100; // Low
     else if(intensity == 1) burstInterval = 40;  // Medium
-    else                    burstInterval = 15;  // High
+    else                    burstInterval = 3;   // High
 
     setTimer(burstTimer, burstInterval);
     setTimer(durationTimer, 1000);

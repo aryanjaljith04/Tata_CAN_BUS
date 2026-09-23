@@ -84,7 +84,10 @@ on timer loadTimer {
   }
 
   // STEP 6 -- Deferral decision
-  if(predictedLoad > threshold) {
+  // If user slides threshold to 95, treat it as a hard kill-switch (Algorithm OFF)
+  if(threshold >= 94.9) {
+    @sysvar::LoadManager::DeferralActive = 0;
+  } else if(predictedLoad > threshold) {
     @sysvar::LoadManager::DeferralActive = 1;
     write("DEFERRAL ON: Predicted load = %.1f%%", predictedLoad);
   } else {

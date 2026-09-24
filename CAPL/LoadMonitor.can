@@ -88,11 +88,17 @@ on timer loadTimer {
   if(threshold >= 94.9) {
     @sysvar::LoadManager::DeferralActive = 0;
   } else if(predictedLoad > threshold) {
-    @sysvar::LoadManager::DeferralActive = 1;
-    write("DEFERRAL ON: Predicted load = %.1f%%", predictedLoad);
-  } else {
-    @sysvar::LoadManager::DeferralActive = 0;
+    if(@sysvar::LoadManager::DeferralActive == 0) {
+      @sysvar::LoadManager::DeferralActive = 1;
+      write("DEFERRAL ON: Predicted load = %.1f%%", predictedLoad);
+    }
+  } else if(predictedLoad < (threshold - 10.0)) {
+    if(@sysvar::LoadManager::DeferralActive == 1) {
+      @sysvar::LoadManager::DeferralActive = 0;
+      write("DEFERRAL OFF: Network recovered. Load = %.1f%%", predictedLoad);
+    }
   }
+  // If between (threshold - 10) and threshold, maintain previous state (Hysteresis)
 
   // STEP 7 -- Push to panel sysvars
   @sysvar::LoadManager::CurrentLoad   = currentLoad;

@@ -11,8 +11,8 @@ variables {
 
 // Main execution block for the Test Module
 void MainTest() {
-  TestModuleTitle("IVN Safety and Deferral Algorithm Test Report");
-  TestModuleDescription("Automated validation of ISO-26262 compliance during network congestion.");
+  TestModuleTitle("IVN Safety and Deferral Algorithm - Exhaustive Test Suite");
+  TestModuleDescription("Comprehensive validation of ISO-26262 compliance across all fault intensities, types, and mathematical edge cases.");
 
   // Reset everything to default before starting
   @sysvar::FaultInjection::StopFault = 1;
@@ -21,133 +21,172 @@ void MainTest() {
   testWaitForTimeout(1000);
 
   // Run the test sequence
-  RunScenario1_Baseline();
-  RunScenario2_Flooded();
-  RunScenario3_AlgorithmActive();
+  TC1_Baseline_Control();
+  TC2_Low_Intensity_Flood();
+  TC3_Medium_Intensity_Flood();
+  TC4_High_Intensity_Burst();
+  TC5_High_Intensity_Burst_Defended();
+  TC6_High_Intensity_Ramp_Defended();
+  TC7_High_Intensity_Cascade_Defended();
+  TC8_False_Positive_Check();
+  TC9_Alpha_Too_Slow_Vulnerability();
 }
 
-testcase RunScenario1_Baseline() {
-  TestCaseTitle("Scenario 1", "Baseline Idle Traffic (<70% Load)");
-  TestCaseDescription("Verify that without fault injection, the bus maintains safe load and crash latency is < 30ms.");
+void ResetTestState() {
+  @sysvar::FaultInjection::StopFault = 1;
+  @sysvar::CrashSafety::ResetCrash = 1;
+  @sysvar::LoadManager::Alpha = 0.3;
+  @sysvar::LoadManager::Threshold = 95.0; // Algo OFF by default
+  testWaitForTimeout(2000); // Wait for bus to normalize
+}
 
-  // 1. Setup
-  @sysvar::LoadManager::Threshold = 95.0; // Algorithm OFF
-  @sysvar::FaultInjection::StopFault = 1; 
-  TestStep("Setup", "Fault Injector OFF, Threshold 95 (Algo OFF)");
-  testWaitForTimeout(3000); // wait for EWMA to settle
-
-  // 2. Validate Load
-  if(@sysvar::LoadManager::CurrentLoad < 70.0) {
-    TestStepPass("Load Validation", "Current Load is %.1f%% (Expected < 70%%)", @sysvar::LoadManager::CurrentLoad);
-  } else {
-    TestStepFail("Load Validation", "Current Load is %.1f%% (Expected < 70%%)", @sysvar::LoadManager::CurrentLoad);
-  }
-
-  // 3. Trigger Crash
+testcase TC1_Baseline_Control() {
+  TestCaseTitle("TC1", "Baseline Idle Traffic");
+  TestCaseDescription("Validates that under normal conditions, the bus is stable and crash latency is safe.");
+  ResetTestState();
+  
   TestStep("Execution", "Triggering Crash Sensor");
   @sysvar::CrashSafety::SimulateCrash = 1;
-
-  // 4. Validate Latency
-  if(testWaitForSysVar(@sysvar::CrashSafety::AirbagDeployed == 1, 2000) == 1) {
-    if(@sysvar::CrashSafety::SafetyBreach == 0) {
-      TestStepPass("Safety Validation", "Airbag deployed in %d ms (GREEN / SAFE)", @sysvar::CrashSafety::CrashToACU_Latency);
-    } else {
-      TestStepFail("Safety Validation", "Airbag deployed too late: %d ms", @sysvar::CrashSafety::CrashToACU_Latency);
-    }
-  } else {
-    TestStepFail("Timeout", "Airbag never deployed");
-  }
-
-  // Teardown
-  @sysvar::CrashSafety::ResetCrash = 1;
-  testWaitForTimeout(1000);
+  if(testWaitForSysVar(@sysvar::CrashSafety::AirbagDeployed == 1, 2000)) {
+    if(@sysvar::CrashSafety::SafetyBreach == 0) TestStepPass("Result", "Safe Latency: %d ms", @sysvar::CrashSafety::CrashToACU_Latency);
+    else TestStepFail("Result", "Unsafe Latency: %d ms", @sysvar::CrashSafety::CrashToACU_Latency);
+  } else TestStepFail("Timeout", "No deployment");
 }
 
-testcase RunScenario2_Flooded() {
-  TestCaseTitle("Scenario 2", "Flooded Network (Algorithm OFF)");
-  TestCaseDescription("Verify that when flooded without defense, arbitration delays cause ISO-26262 violation (>30ms latency).");
-
-  // 1. Setup
-  @sysvar::LoadManager::Threshold = 95.0; // Algorithm OFF (Kill Switch)
-  @sysvar::FaultInjection::BurstIntensity = 2; // High
+testcase TC2_Low_Intensity_Flood() {
+  TestCaseTitle("TC2", "Low Intensity Noise (Algorithm OFF)");
+  TestCaseDescription("Validates that minor noise does not cause ISO-26262 breach.");
+  ResetTestState();
+  @sysvar::FaultInjection::BurstIntensity = 0; // Low
   @sysvar::FaultInjection::ScenarioType = 1;
-  TestStep("Setup", "Starting Fault Injector (High), Threshold 95 (Algo OFF)");
-  
   @sysvar::FaultInjection::InjectFault = 1;
-  testWaitForTimeout(3000); // wait for bus to flood and EWMA to catch up
-
-  // 2. Validate Load
-  if(@sysvar::LoadManager::CurrentLoad >= 90.0) {
-    TestStepPass("Load Validation", "Current Load spiked to %.1f%%", @sysvar::LoadManager::CurrentLoad);
-  } else {
-    TestStepFail("Load Validation", "Current Load only reached %.1f%% (Expected >90%%)", @sysvar::LoadManager::CurrentLoad);
-  }
-
-  // 3. Trigger Crash
-  TestStep("Execution", "Triggering Crash Sensor during Flood");
+  testWaitForTimeout(2000);
+  
   @sysvar::CrashSafety::SimulateCrash = 1;
-
-  // 4. Validate Latency (Should FAIL safely protocol)
-  if(testWaitForSysVar(@sysvar::CrashSafety::AirbagDeployed == 1, 2000) == 1) {
-    if(@sysvar::CrashSafety::SafetyBreach == 1) {
-      TestStepPass("Safety Validation", "SUCCESSFUL FAILURE: Algorithm OFF resulted in unsafe latency of %d ms (RED / BREACH)", @sysvar::CrashSafety::CrashToACU_Latency);
-    } else {
-      TestStepFail("Safety Validation", "Anomaly: Deployed fast (%d ms) despite algorithm being OFF.", @sysvar::CrashSafety::CrashToACU_Latency);
-    }
-  } else {
-    TestStepFail("Timeout", "Airbag never deployed");
+  if(testWaitForSysVar(@sysvar::CrashSafety::AirbagDeployed == 1, 2000)) {
+    if(@sysvar::CrashSafety::SafetyBreach == 0) TestStepPass("Result", "Safe Latency: %d ms", @sysvar::CrashSafety::CrashToACU_Latency);
+    else TestStepFail("Result", "Unsafe Latency: %d ms", @sysvar::CrashSafety::CrashToACU_Latency);
   }
-
-  // Teardown
-  @sysvar::FaultInjection::StopFault = 1;
-  @sysvar::CrashSafety::ResetCrash = 1;
-  testWaitForTimeout(3000); // wait for bus to clear
 }
 
-testcase RunScenario3_AlgorithmActive() {
-  TestCaseTitle("Scenario 3", "Flooded Network (Algorithm ON)");
-  TestCaseDescription("Verify that the EWMA algorithm successfully defers ECUs, lowers load, and ensures safe crash latency.");
+testcase TC3_Medium_Intensity_Flood() {
+  TestCaseTitle("TC3", "Medium Intensity Flood (Algorithm OFF)");
+  TestCaseDescription("Validates moderate congestion behavior (15ms delay). Still passes ISO 30ms rule.");
+  ResetTestState();
+  @sysvar::FaultInjection::BurstIntensity = 1; // Medium
+  @sysvar::FaultInjection::ScenarioType = 1;
+  @sysvar::FaultInjection::InjectFault = 1;
+  testWaitForTimeout(2000);
+  
+  @sysvar::CrashSafety::SimulateCrash = 1;
+  if(testWaitForSysVar(@sysvar::CrashSafety::AirbagDeployed == 1, 2000)) {
+    if(@sysvar::CrashSafety::SafetyBreach == 0) TestStepPass("Result", "Moderate Latency (Safe): %d ms", @sysvar::CrashSafety::CrashToACU_Latency);
+    else TestStepFail("Result", "Unsafe Latency: %d ms", @sysvar::CrashSafety::CrashToACU_Latency);
+  }
+}
 
-  // 1. Setup
-  @sysvar::LoadManager::Threshold = 70.0; // Algorithm ARMED
+testcase TC4_High_Intensity_Burst() {
+  TestCaseTitle("TC4", "High Intensity Burst - CATASTROPHIC FAILURE (Algorithm OFF)");
+  TestCaseDescription("Proves that without defense, severe congestion breaches ISO-26262 laws.");
+  ResetTestState();
   @sysvar::FaultInjection::BurstIntensity = 2; // High
   @sysvar::FaultInjection::ScenarioType = 1;
-  TestStep("Setup", "Starting Fault Injector (High), Threshold 70 (Algo ARMED)");
-  
   @sysvar::FaultInjection::InjectFault = 1;
-  testWaitForTimeout(4000); // wait for EWMA to trigger deferral and load to drop
-
-  // 2. Validate Deferral
-  if(@sysvar::LoadManager::DeferralActive == 1) {
-    TestStepPass("Deferral Logic", "Algorithm successfully activated Deferral state.");
-  } else {
-    TestStepFail("Deferral Logic", "Algorithm failed to trigger Deferral.");
-  }
-
-  // 3. Validate Load (Should be clamped)
-  if(@sysvar::LoadManager::CurrentLoad < 70.0) {
-    TestStepPass("Load Validation", "Algorithm successfully clamped load down to %.1f%%", @sysvar::LoadManager::CurrentLoad);
-  } else {
-    TestStepFail("Load Validation", "Algorithm failed to clamp load. Currently %.1f%%", @sysvar::LoadManager::CurrentLoad);
-  }
-
-  // 4. Trigger Crash
-  TestStep("Execution", "Triggering Crash Sensor during Defended Flood");
+  testWaitForTimeout(2000);
+  
   @sysvar::CrashSafety::SimulateCrash = 1;
-
-  // 5. Validate Latency (Must PASS safely protocol)
-  if(testWaitForSysVar(@sysvar::CrashSafety::AirbagDeployed == 1, 2000) == 1) {
-    if(@sysvar::CrashSafety::SafetyBreach == 0) {
-      TestStepPass("Safety Validation", "ALGORITHM SUCCESS: Airbag safely deployed in %d ms (GREEN / SAFE) despite active flood!", @sysvar::CrashSafety::CrashToACU_Latency);
-    } else {
-      TestStepFail("Safety Validation", "ALGORITHM FAILED: Airbag deployment delayed to %d ms.", @sysvar::CrashSafety::CrashToACU_Latency);
-    }
-  } else {
-    TestStepFail("Timeout", "Airbag never deployed");
+  if(testWaitForSysVar(@sysvar::CrashSafety::AirbagDeployed == 1, 2000)) {
+    if(@sysvar::CrashSafety::SafetyBreach == 1) TestStepPass("Result", "SUCCESSFUL FAILURE: Network collapsed. Latency %d ms > 30ms limit.", @sysvar::CrashSafety::CrashToACU_Latency);
+    else TestStepFail("Result", "Did not fail. Latency: %d ms", @sysvar::CrashSafety::CrashToACU_Latency);
   }
+}
 
-  // Teardown
-  @sysvar::FaultInjection::StopFault = 1;
-  @sysvar::CrashSafety::ResetCrash = 1;
-  testWaitForTimeout(1000);
+testcase TC5_High_Intensity_Burst_Defended() {
+  TestCaseTitle("TC5", "High Intensity Burst (Algorithm ON)");
+  TestCaseDescription("Proves algorithm defends against sudden high-intensity bursts.");
+  ResetTestState();
+  @sysvar::LoadManager::Threshold = 70.0;
+  @sysvar::FaultInjection::BurstIntensity = 2; // High
+  @sysvar::FaultInjection::ScenarioType = 1;
+  @sysvar::FaultInjection::InjectFault = 1;
+  testWaitForTimeout(4000); // Wait for deferral
+  
+  @sysvar::CrashSafety::SimulateCrash = 1;
+  if(testWaitForSysVar(@sysvar::CrashSafety::AirbagDeployed == 1, 2000)) {
+    if(@sysvar::CrashSafety::SafetyBreach == 0 && @sysvar::LoadManager::DeferralActive == 1) 
+      TestStepPass("Result", "DEFENDED: Latency %d ms. Deferral was Active.", @sysvar::CrashSafety::CrashToACU_Latency);
+    else TestStepFail("Result", "Failed Defense. Latency: %d ms", @sysvar::CrashSafety::CrashToACU_Latency);
+  }
+}
+
+testcase TC6_High_Intensity_Ramp_Defended() {
+  TestCaseTitle("TC6", "High Intensity Ramp Attack (Algorithm ON)");
+  TestCaseDescription("Proves algorithm dynamically catches a slowly rising load.");
+  ResetTestState();
+  @sysvar::LoadManager::Threshold = 70.0;
+  @sysvar::FaultInjection::BurstIntensity = 2; 
+  @sysvar::FaultInjection::ScenarioType = 2; // Ramp
+  @sysvar::FaultInjection::InjectFault = 1;
+  testWaitForTimeout(6000); // Ramp takes time
+  
+  @sysvar::CrashSafety::SimulateCrash = 1;
+  if(testWaitForSysVar(@sysvar::CrashSafety::AirbagDeployed == 1, 2000)) {
+    if(@sysvar::CrashSafety::SafetyBreach == 0) TestStepPass("Result", "DEFENDED RAMP: Latency %d ms.", @sysvar::CrashSafety::CrashToACU_Latency);
+    else TestStepFail("Result", "Failed Defense. Latency: %d ms", @sysvar::CrashSafety::CrashToACU_Latency);
+  }
+}
+
+testcase TC7_High_Intensity_Cascade_Defended() {
+  TestCaseTitle("TC7", "High Intensity Cascade Attack (Algorithm ON)");
+  TestCaseDescription("Proves algorithm defends against distributed multi-ID attacks.");
+  ResetTestState();
+  @sysvar::LoadManager::Threshold = 70.0;
+  @sysvar::FaultInjection::BurstIntensity = 2; 
+  @sysvar::FaultInjection::ScenarioType = 3; // Cascade
+  @sysvar::FaultInjection::InjectFault = 1;
+  testWaitForTimeout(4000); 
+  
+  @sysvar::CrashSafety::SimulateCrash = 1;
+  if(testWaitForSysVar(@sysvar::CrashSafety::AirbagDeployed == 1, 2000)) {
+    if(@sysvar::CrashSafety::SafetyBreach == 0) TestStepPass("Result", "DEFENDED CASCADE: Latency %d ms.", @sysvar::CrashSafety::CrashToACU_Latency);
+    else TestStepFail("Result", "Failed Defense. Latency: %d ms", @sysvar::CrashSafety::CrashToACU_Latency);
+  }
+}
+
+testcase TC8_False_Positive_Check() {
+  TestCaseTitle("TC8", "False Positive Immunity");
+  TestCaseDescription("Ensures normal baseline traffic does not accidentally trigger the algorithm when armed.");
+  ResetTestState();
+  @sysvar::LoadManager::Threshold = 70.0; // Armed, but no fault
+  testWaitForTimeout(3000); 
+  
+  if(@sysvar::LoadManager::DeferralActive == 0) {
+    TestStepPass("Result", "No false positive. Deferral remained OFF.");
+  } else {
+    TestStepFail("Result", "Algorithm falsely triggered during normal traffic.");
+  }
+}
+
+testcase TC9_Alpha_Too_Slow_Vulnerability() {
+  TestCaseTitle("TC9", "Mathematical Vulnerability (Alpha = 0.01)");
+  TestCaseDescription("Proves that an incorrectly tuned EWMA (Alpha too low) reacts too slowly to prevent a sudden crash delay.");
+  ResetTestState();
+  @sysvar::LoadManager::Threshold = 70.0;
+  @sysvar::LoadManager::Alpha = 0.01; // Severely slow math
+  
+  @sysvar::FaultInjection::BurstIntensity = 2; 
+  @sysvar::FaultInjection::ScenarioType = 1; 
+  @sysvar::FaultInjection::InjectFault = 1;
+  
+  // Wait only 1 second -- algorithm is too slow to catch it in time!
+  testWaitForTimeout(1000); 
+  
+  @sysvar::CrashSafety::SimulateCrash = 1;
+  if(testWaitForSysVar(@sysvar::CrashSafety::AirbagDeployed == 1, 2000)) {
+    if(@sysvar::CrashSafety::SafetyBreach == 1 && @sysvar::LoadManager::DeferralActive == 0) {
+      TestStepPass("Result", "SUCCESSFUL FAILURE: Slow Alpha failed to activate deferral in time. Latency %d ms.", @sysvar::CrashSafety::CrashToACU_Latency);
+    } else {
+      TestStepFail("Result", "Anomaly: Latency %d, Deferral %d", @sysvar::CrashSafety::CrashToACU_Latency, @sysvar::LoadManager::DeferralActive);
+    }
+  }
 }

@@ -19,7 +19,7 @@ variables {
   float     sumLoad       = 0.0;
   float     sumSqErr      = 0.0;
   float     prevPredicted = 0.0;
-  float     maxMsgs       = 100.0;
+  float     maxMsgs       = 50.0;
   int       sampleCount   = 0;
   // Declare these here -- NOT inside on timer block
   float     accuracy      = 0.0;

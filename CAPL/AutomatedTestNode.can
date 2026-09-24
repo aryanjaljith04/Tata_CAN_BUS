@@ -47,7 +47,7 @@ testcase TC1_Baseline_Control() {
   
   TestStep("Execution", "Triggering Crash Sensor");
   @sysvar::CrashSafety::SimulateCrash = 1;
-  if(testWaitForSysVar(sysvar::CrashSafety::AirbagDeployed, 1, 2000) == 1) {
+  if(testWaitForSysVar(sysvar::CrashSafety::AirbagDeployed, 2000) == 1) {
     if(@sysvar::CrashSafety::SafetyBreach == 0) TestStepPass("Result", "Safe Latency: %d ms", @sysvar::CrashSafety::CrashToACU_Latency);
     else TestStepFail("Result", "Unsafe Latency: %d ms", @sysvar::CrashSafety::CrashToACU_Latency);
   } else TestStepFail("Timeout", "No deployment");
@@ -63,7 +63,7 @@ testcase TC2_Low_Intensity_Flood() {
   testWaitForTimeout(2000);
   
   @sysvar::CrashSafety::SimulateCrash = 1;
-  if(testWaitForSysVar(sysvar::CrashSafety::AirbagDeployed, 1, 2000) == 1) {
+  if(testWaitForSysVar(sysvar::CrashSafety::AirbagDeployed, 2000) == 1) {
     if(@sysvar::CrashSafety::SafetyBreach == 0) TestStepPass("Result", "Safe Latency: %d ms", @sysvar::CrashSafety::CrashToACU_Latency);
     else TestStepFail("Result", "Unsafe Latency: %d ms", @sysvar::CrashSafety::CrashToACU_Latency);
   }
@@ -79,7 +79,7 @@ testcase TC3_Medium_Intensity_Flood() {
   testWaitForTimeout(2000);
   
   @sysvar::CrashSafety::SimulateCrash = 1;
-  if(testWaitForSysVar(sysvar::CrashSafety::AirbagDeployed, 1, 2000) == 1) {
+  if(testWaitForSysVar(sysvar::CrashSafety::AirbagDeployed, 2000) == 1) {
     if(@sysvar::CrashSafety::SafetyBreach == 0) TestStepPass("Result", "Moderate Latency (Safe): %d ms", @sysvar::CrashSafety::CrashToACU_Latency);
     else TestStepFail("Result", "Unsafe Latency: %d ms", @sysvar::CrashSafety::CrashToACU_Latency);
   }
@@ -95,7 +95,7 @@ testcase TC4_High_Intensity_Burst() {
   testWaitForTimeout(2000);
   
   @sysvar::CrashSafety::SimulateCrash = 1;
-  if(testWaitForSysVar(sysvar::CrashSafety::AirbagDeployed, 1, 2000) == 1) {
+  if(testWaitForSysVar(sysvar::CrashSafety::AirbagDeployed, 2000) == 1) {
     if(@sysvar::CrashSafety::SafetyBreach == 1) TestStepPass("Result", "SUCCESSFUL FAILURE: Network collapsed. Latency %d ms > 30ms limit.", @sysvar::CrashSafety::CrashToACU_Latency);
     else TestStepFail("Result", "Did not fail. Latency: %d ms", @sysvar::CrashSafety::CrashToACU_Latency);
   }
@@ -112,7 +112,7 @@ testcase TC5_High_Intensity_Burst_Defended() {
   testWaitForTimeout(4000); // Wait for deferral
   
   @sysvar::CrashSafety::SimulateCrash = 1;
-  if(testWaitForSysVar(sysvar::CrashSafety::AirbagDeployed, 1, 2000) == 1) {
+  if(testWaitForSysVar(sysvar::CrashSafety::AirbagDeployed, 2000) == 1) {
     if(@sysvar::CrashSafety::SafetyBreach == 0 && @sysvar::LoadManager::DeferralActive == 1) 
       TestStepPass("Result", "DEFENDED: Latency %d ms. Deferral was Active.", @sysvar::CrashSafety::CrashToACU_Latency);
     else TestStepFail("Result", "Failed Defense. Latency: %d ms", @sysvar::CrashSafety::CrashToACU_Latency);
@@ -130,7 +130,7 @@ testcase TC6_High_Intensity_Ramp_Defended() {
   testWaitForTimeout(6000); // Ramp takes time
   
   @sysvar::CrashSafety::SimulateCrash = 1;
-  if(testWaitForSysVar(sysvar::CrashSafety::AirbagDeployed, 1, 2000) == 1) {
+  if(testWaitForSysVar(sysvar::CrashSafety::AirbagDeployed, 2000) == 1) {
     if(@sysvar::CrashSafety::SafetyBreach == 0) TestStepPass("Result", "DEFENDED RAMP: Latency %d ms.", @sysvar::CrashSafety::CrashToACU_Latency);
     else TestStepFail("Result", "Failed Defense. Latency: %d ms", @sysvar::CrashSafety::CrashToACU_Latency);
   }
@@ -147,7 +147,7 @@ testcase TC7_High_Intensity_Cascade_Defended() {
   testWaitForTimeout(4000); 
   
   @sysvar::CrashSafety::SimulateCrash = 1;
-  if(testWaitForSysVar(sysvar::CrashSafety::AirbagDeployed, 1, 2000) == 1) {
+  if(testWaitForSysVar(sysvar::CrashSafety::AirbagDeployed, 2000) == 1) {
     if(@sysvar::CrashSafety::SafetyBreach == 0) TestStepPass("Result", "DEFENDED CASCADE: Latency %d ms.", @sysvar::CrashSafety::CrashToACU_Latency);
     else TestStepFail("Result", "Failed Defense. Latency: %d ms", @sysvar::CrashSafety::CrashToACU_Latency);
   }
@@ -182,7 +182,7 @@ testcase TC9_Alpha_Too_Slow_Vulnerability() {
   testWaitForTimeout(1000); 
   
   @sysvar::CrashSafety::SimulateCrash = 1;
-  if(testWaitForSysVar(sysvar::CrashSafety::AirbagDeployed, 1, 2000) == 1) {
+  if(testWaitForSysVar(sysvar::CrashSafety::AirbagDeployed, 2000) == 1) {
     if(@sysvar::CrashSafety::SafetyBreach == 1 && @sysvar::LoadManager::DeferralActive == 0) {
       TestStepPass("Result", "SUCCESSFUL FAILURE: Slow Alpha failed to activate deferral in time. Latency %d ms.", @sysvar::CrashSafety::CrashToACU_Latency);
     } else {

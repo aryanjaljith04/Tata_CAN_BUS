@@ -1,0 +1,153 @@
+/* TestNode.can
+   Purpose: Automated Test Execution for the IVN Project
+   Covers Scenario 1 (Baseline), Scenario 2 (Flooded), Scenario 3 (Deferred)
+*/
+
+includes {
+}
+
+variables {
+}
+
+// Main execution block for the Test Module
+void MainTest() {
+  TestModuleTitle("IVN Safety and Deferral Algorithm Test Report");
+  TestModuleDescription("Automated validation of ISO-26262 compliance during network congestion.");
+
+  // Reset everything to default before starting
+  @sysvar::FaultInjection::StopFault = 1;
+  @sysvar::CrashSafety::ResetCrash = 1;
+  @sysvar::LoadManager::Alpha = 0.3;
+  testWaitForTimeout(1000);
+
+  // Run the test sequence
+  RunScenario1_Baseline();
+  RunScenario2_Flooded();
+  RunScenario3_AlgorithmActive();
+}
+
+testcase RunScenario1_Baseline() {
+  TestCaseTitle("Scenario 1", "Baseline Idle Traffic (<70% Load)");
+  TestCaseDescription("Verify that without fault injection, the bus maintains safe load and crash latency is < 30ms.");
+
+  // 1. Setup
+  @sysvar::LoadManager::Threshold = 95.0; // Algorithm OFF
+  @sysvar::FaultInjection::StopFault = 1; 
+  TestStep("Setup", "Fault Injector OFF, Threshold 95 (Algo OFF)");
+  testWaitForTimeout(3000); // wait for EWMA to settle
+
+  // 2. Validate Load
+  if(@sysvar::LoadManager::CurrentLoad < 70.0) {
+    TestStepPass("Load Validation", "Current Load is %.1f%% (Expected < 70%%)", @sysvar::LoadManager::CurrentLoad);
+  } else {
+    TestStepFail("Load Validation", "Current Load is %.1f%% (Expected < 70%%)", @sysvar::LoadManager::CurrentLoad);
+  }
+
+  // 3. Trigger Crash
+  TestStep("Execution", "Triggering Crash Sensor");
+  @sysvar::CrashSafety::SimulateCrash = 1;
+
+  // 4. Validate Latency
+  if(testWaitForSysVar(@sysvar::CrashSafety::AirbagDeployed == 1, 2000) == 1) {
+    if(@sysvar::CrashSafety::SafetyBreach == 0) {
+      TestStepPass("Safety Validation", "Airbag deployed in %d ms (GREEN / SAFE)", @sysvar::CrashSafety::CrashToACU_Latency);
+    } else {
+      TestStepFail("Safety Validation", "Airbag deployed too late: %d ms", @sysvar::CrashSafety::CrashToACU_Latency);
+    }
+  } else {
+    TestStepFail("Timeout", "Airbag never deployed");
+  }
+
+  // Teardown
+  @sysvar::CrashSafety::ResetCrash = 1;
+  testWaitForTimeout(1000);
+}
+
+testcase RunScenario2_Flooded() {
+  TestCaseTitle("Scenario 2", "Flooded Network (Algorithm OFF)");
+  TestCaseDescription("Verify that when flooded without defense, arbitration delays cause ISO-26262 violation (>30ms latency).");
+
+  // 1. Setup
+  @sysvar::LoadManager::Threshold = 95.0; // Algorithm OFF (Kill Switch)
+  @sysvar::FaultInjection::BurstIntensity = 2; // High
+  @sysvar::FaultInjection::ScenarioType = 1;
+  TestStep("Setup", "Starting Fault Injector (High), Threshold 95 (Algo OFF)");
+  
+  @sysvar::FaultInjection::InjectFault = 1;
+  testWaitForTimeout(3000); // wait for bus to flood and EWMA to catch up
+
+  // 2. Validate Load
+  if(@sysvar::LoadManager::CurrentLoad >= 90.0) {
+    TestStepPass("Load Validation", "Current Load spiked to %.1f%%", @sysvar::LoadManager::CurrentLoad);
+  } else {
+    TestStepFail("Load Validation", "Current Load only reached %.1f%% (Expected >90%%)", @sysvar::LoadManager::CurrentLoad);
+  }
+
+  // 3. Trigger Crash
+  TestStep("Execution", "Triggering Crash Sensor during Flood");
+  @sysvar::CrashSafety::SimulateCrash = 1;
+
+  // 4. Validate Latency (Should FAIL safely protocol)
+  if(testWaitForSysVar(@sysvar::CrashSafety::AirbagDeployed == 1, 2000) == 1) {
+    if(@sysvar::CrashSafety::SafetyBreach == 1) {
+      TestStepPass("Safety Validation", "SUCCESSFUL FAILURE: Algorithm OFF resulted in unsafe latency of %d ms (RED / BREACH)", @sysvar::CrashSafety::CrashToACU_Latency);
+    } else {
+      TestStepFail("Safety Validation", "Anomaly: Deployed fast (%d ms) despite algorithm being OFF.", @sysvar::CrashSafety::CrashToACU_Latency);
+    }
+  } else {
+    TestStepFail("Timeout", "Airbag never deployed");
+  }
+
+  // Teardown
+  @sysvar::FaultInjection::StopFault = 1;
+  @sysvar::CrashSafety::ResetCrash = 1;
+  testWaitForTimeout(3000); // wait for bus to clear
+}
+
+testcase RunScenario3_AlgorithmActive() {
+  TestCaseTitle("Scenario 3", "Flooded Network (Algorithm ON)");
+  TestCaseDescription("Verify that the EWMA algorithm successfully defers ECUs, lowers load, and ensures safe crash latency.");
+
+  // 1. Setup
+  @sysvar::LoadManager::Threshold = 70.0; // Algorithm ARMED
+  @sysvar::FaultInjection::BurstIntensity = 2; // High
+  @sysvar::FaultInjection::ScenarioType = 1;
+  TestStep("Setup", "Starting Fault Injector (High), Threshold 70 (Algo ARMED)");
+  
+  @sysvar::FaultInjection::InjectFault = 1;
+  testWaitForTimeout(4000); // wait for EWMA to trigger deferral and load to drop
+
+  // 2. Validate Deferral
+  if(@sysvar::LoadManager::DeferralActive == 1) {
+    TestStepPass("Deferral Logic", "Algorithm successfully activated Deferral state.");
+  } else {
+    TestStepFail("Deferral Logic", "Algorithm failed to trigger Deferral.");
+  }
+
+  // 3. Validate Load (Should be clamped)
+  if(@sysvar::LoadManager::CurrentLoad < 70.0) {
+    TestStepPass("Load Validation", "Algorithm successfully clamped load down to %.1f%%", @sysvar::LoadManager::CurrentLoad);
+  } else {
+    TestStepFail("Load Validation", "Algorithm failed to clamp load. Currently %.1f%%", @sysvar::LoadManager::CurrentLoad);
+  }
+
+  // 4. Trigger Crash
+  TestStep("Execution", "Triggering Crash Sensor during Defended Flood");
+  @sysvar::CrashSafety::SimulateCrash = 1;
+
+  // 5. Validate Latency (Must PASS safely protocol)
+  if(testWaitForSysVar(@sysvar::CrashSafety::AirbagDeployed == 1, 2000) == 1) {
+    if(@sysvar::CrashSafety::SafetyBreach == 0) {
+      TestStepPass("Safety Validation", "ALGORITHM SUCCESS: Airbag safely deployed in %d ms (GREEN / SAFE) despite active flood!", @sysvar::CrashSafety::CrashToACU_Latency);
+    } else {
+      TestStepFail("Safety Validation", "ALGORITHM FAILED: Airbag deployment delayed to %d ms.", @sysvar::CrashSafety::CrashToACU_Latency);
+    }
+  } else {
+    TestStepFail("Timeout", "Airbag never deployed");
+  }
+
+  // Teardown
+  @sysvar::FaultInjection::StopFault = 1;
+  @sysvar::CrashSafety::ResetCrash = 1;
+  testWaitForTimeout(1000);
+}

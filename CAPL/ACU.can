@@ -58,8 +58,6 @@ on message CRASH_Detected {
       @sysvar::CrashSafety::SafetyBreach = 0;
       write("SAFETY OK: %d ms within 30ms limit.", latency_ms);
     }
-
-    @sysvar::NodeStatus::Node_ACU_Status = 0;  // Back to standby
   }
 }
 
@@ -70,6 +68,7 @@ on sysvar sysvar::CrashSafety::ResetCrash {
     @sysvar::CrashSafety::CrashToACU_Latency = 0;
     @sysvar::CrashSafety::TotalDeployTime  = 0;
     @sysvar::CrashSafety::SafetyBreach     = 0;
+    @sysvar::NodeStatus::Node_ACU_Status   = 0; // Back to standby
 
     airbagMsg.byte(0) = 0;
     write("ACU RESET -- Ready for next crash test.");

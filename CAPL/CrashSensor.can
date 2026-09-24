@@ -12,7 +12,7 @@ on start {
   crashMsg.byte(0) = 0;
   accMsg.id      = 0x050;
   accMsg.dlc     = 4;
-  @sysvar::NodeStatus::Node_CrashSensor_Status = 1;
+  @sysvar::NodeStatus::Node_CrashSensor_Status = 0; // Standby
   setTimer(accTimer, 100);
 }
 
@@ -30,6 +30,9 @@ on sysvar sysvar::CrashSafety::SimulateCrash {
      && @sysvar::CrashSafety::AirbagDeployed == 0) {
 
     crashFired = 1;  // debounce -- prevent double fire
+
+    // Trigger LED
+    @sysvar::NodeStatus::Node_CrashSensor_Status = 1;
 
     // Record exact send timestamp in nanoseconds
     @sysvar::CrashSafety::CrashSentTime = (int)timeNow();
@@ -54,5 +57,6 @@ on sysvar sysvar::CrashSafety::SimulateCrash {
 on sysvar sysvar::CrashSafety::ResetCrash {
   if(@sysvar::CrashSafety::ResetCrash == 1) {
     crashFired = 0;  // allow next crash
+    @sysvar::NodeStatus::Node_CrashSensor_Status = 0; // Back to standby
   }
 }

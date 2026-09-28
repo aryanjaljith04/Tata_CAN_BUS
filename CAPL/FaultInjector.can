@@ -53,6 +53,12 @@ on sysvar sysvar::FaultInjection::InjectFault {
     else if(intensity == 1) burstInterval = 50;  // Medium
     else                    burstInterval = 20;  // High
 
+    // If it is a Ramp Attack, force the interval to start slow (100ms)
+    // so it can visually ramp up to the target intensity over time.
+    if(@sysvar::FaultInjection::ScenarioType == 2) {
+       burstInterval = 150; 
+    }
+
     setTimer(burstTimer, burstInterval);
     setTimer(durationTimer, 1000);
 

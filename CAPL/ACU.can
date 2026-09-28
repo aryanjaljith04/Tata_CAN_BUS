@@ -51,11 +51,11 @@ on message CRASH_Detected {
 
     // ISO 26262 check -- 30ms limit
     if(latency_ms > 30) {
-      @sysvar::CrashSafety::SafetyBreach = 1;
+      @sysvar::CrashSafety::SafetyBreach = 2; // State 2: RED (Breach)
       write("SAFETY BREACH: %d ms > 30ms ISO 26262 limit!",
             latency_ms);
     } else {
-      @sysvar::CrashSafety::SafetyBreach = 0;
+      @sysvar::CrashSafety::SafetyBreach = 1; // State 1: GREEN (Passed)
       write("SAFETY OK: %d ms within 30ms limit.", latency_ms);
     }
   }
@@ -67,7 +67,7 @@ on sysvar sysvar::CrashSafety::ResetCrash {
     @sysvar::CrashSafety::CrashSentTime    = 0;
     @sysvar::CrashSafety::CrashToACU_Latency = 0;
     @sysvar::CrashSafety::TotalDeployTime  = 0;
-    @sysvar::CrashSafety::SafetyBreach     = 0;
+    @sysvar::CrashSafety::SafetyBreach     = 0; // State 0: GREY (Idle)
     @sysvar::NodeStatus::Node_ACU_Status   = 0; // Back to standby
 
     airbagMsg.byte(0) = 0;
